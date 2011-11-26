@@ -153,7 +153,7 @@ def main():
     
     if getattr(args, 'plugins'):
         args.plugins = list(set(args.plugins))
-        
+
     args.func(args)
 
 if __name__ == '__main__':

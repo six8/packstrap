@@ -10,7 +10,7 @@ def main():
         author_email='six8@devdetails.com',
         keywords=['packaging'],
         license='MIT',
-        description='Easy way to boostrap a new Python package',
+        description='Bootstrap new Python packages with one simple command',
         classifiers = [
             "Programming Language :: Python",
             "Development Status :: 3 - Alpha",
