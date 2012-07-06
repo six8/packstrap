@@ -6,6 +6,7 @@ import shutil
 from fnmatch import fnmatch
 import util
 from jinja2 import Environment
+from datetime import datetime
 
 SKEL_DIR = path.join(path.dirname(path.dirname(path.abspath(__file__))), 'skels')
 PLUGIN_DIR = path.join(path.dirname(path.dirname(path.abspath(__file__))), 'plugins')
@@ -27,16 +28,28 @@ def get_defaults():
 
 def set_defaults(args):
     defaults = get_defaults()
+    changes = False
     for opt in default_options.values():
         key = opt['dest']
         v = getattr(args, key)
-        if v:            
+        if v:      
+            if key == 'plugins':
+                plugins = os.listdir(PLUGIN_DIR)
+                for plugin in v:
+                    if plugin not in plugins:
+                        raise Exception('Invalid plugin %s' % plugin)
+
+            changes = True      
             defaults[key] = v
         
-    with open(CONFIG_FILE, 'w') as file:
-        json.dump(defaults, file, indent=2)
+    if changes:
+        with open(CONFIG_FILE, 'w') as file:
+            json.dump(defaults, file, indent=2)
 
     print(json.dumps(get_defaults(), indent=2))
+
+def list_plugins(args):
+    print('\n'.join(os.listdir(PLUGIN_DIR)))
 
 class SyncListener(util.SyncListener):
     def __init__(self, template_env, context):
@@ -98,7 +111,7 @@ def _empty_string(val):
 
 def create(args):
     args.modname = args.modname if args.modname else args.name
-    args.dir = path.join(path.abspath(path.expanduser(args.dir)), args.name)
+    args.dir = path.abspath(path.expanduser(args.dir))
 
     print('Creating %s project %s at %s...' % (args.skeleton, args.name, args.dir))
 
@@ -107,15 +120,17 @@ def create(args):
 
     util.synctree(path.join(SKEL_DIR, args.skeleton), args.dir, listener=sync_listener)
 
-    for plugin in args.plugins:
-        print('Including plugin %s...' % plugin)
-        util.synctree(path.join(PLUGIN_DIR, plugin), args.dir, listener=sync_listener)        
+    if args.plugins:
+        for plugin in args.plugins:
+            print('Including plugin %s...' % plugin)
+            util.synctree(path.join(PLUGIN_DIR, plugin), args.dir, listener=sync_listener)        
 
 def add_package_config_args(parser):
     defaults = get_defaults()
     for k, opt in default_options.iteritems():
         if opt['dest'] in defaults:
-            opt['default'] = defaults[opt['dest']]
+            default = defaults[opt['dest']]
+            opt['default'] = default
         
         args = [k]
         if 'flag' in opt:
@@ -142,6 +157,7 @@ def main():
     parser_create = subparsers.add_parser('create', help='Create a new project')
     parser_create.add_argument('name', help='Name of the project', metavar='NAME')
     parser_create.add_argument('dir', help='Directory to create project in (default: %(default)s)', default='.', metavar='DIRECTORY', nargs='?')
+    parser_create.add_argument('-y', '--copyright-year', help='Copyright year (default: %(default)s)', type=int, dest='copyright_year', default=datetime.now().year, metavar='YEAR')
     parser_create.add_argument('--force', help='Force overwriting existing files', action='store_true')
     parser_create.set_defaults(func=create)
 
@@ -149,9 +165,12 @@ def main():
     cfg_parser.add_argument('--modname', help='Name of the Python module if different from project name.')
     cfg_parser.add_argument('--description', help='Project description.') 
 
+    parser_plugins = subparsers.add_parser('plugins', help='List availible plugins')
+    parser_plugins.set_defaults(func=list_plugins)
+
     args = parser.parse_args()
     
-    if getattr(args, 'plugins'):
+    if getattr(args, 'plugins', None):
         args.plugins = list(set(args.plugins))
 
     args.func(args)

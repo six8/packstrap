@@ -14,6 +14,7 @@ basics. Packstrap aims to make starting a Python package simpler.
 Install
 -------
 
+::
     pip install packstrap
     packstrap --help
 
@@ -34,12 +35,11 @@ This will create a `my_package` directory in `/path/to/code` with a structure si
         VERSION.txt
         fabfile.py
         setup.py
-        src/
-            my_package/
-                __init__.py
-            tests/
-                conftest.py
-                runtests.py
+        my_package/
+            __init__.py
+        tests/
+            conftest.py
+            runtests.py
 
 Packstrap creates the base files for a python project and fills in the basics for setup.py, README.rst, etc.
 The git plugin creates `.gitignore`, the fabfile plugin creates `fabfile.py`, and the pytest plugin creates the

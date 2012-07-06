@@ -4,7 +4,7 @@ def main():
     setup(
         name = 'packstrap',
         packages=['packstrap'],
-        package_dir = {'':'src'},
+        package_dir = {'packstrap':'packstrap'},
         version = open('VERSION.txt').read().strip(),
         author='Mike Thornton',
         author_email='six8@devdetails.com',
@@ -26,7 +26,10 @@ def main():
             'console_scripts': [
                 'packstrap = packstrap.main:main',
             ]
-        }
+        },
+        install_requires = [
+            'Jinja2'
+        ]
     )
 
 if __name__ == '__main__':

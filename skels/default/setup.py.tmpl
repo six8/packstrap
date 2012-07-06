@@ -4,7 +4,7 @@ def main():
     setup(
         name = '{{name}}',
         packages=['{{modname}}'],
-        package_dir = {'':'src'},
+        package_dir = {'{{modname}}':'{{modname}}'},
         version = open('VERSION.txt').read().strip(),
         author='{{author}}',
         author_email='{{author_email}}',
